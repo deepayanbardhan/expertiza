@@ -59,7 +59,8 @@ class UsersController < ApplicationController
   # for displaying the list of users
   def list
     user = session[:user]
-    @users = user.get_user_list
+    #paginate_list is called with the
+    @users = paginate_list(user.get_user_list)
   end
 
   def list_pending_requested
@@ -67,10 +68,12 @@ class UsersController < ApplicationController
     @roles = Role.all
   end
 
-  def show_selection
+  #for displaying users which are being searched for editing purposes after checking authorization
+  def show_if_authorized
     @user = User.find_by(name: params[:user][:name])
     if !@user.nil?
-      get_role
+      role
+      #check whether current user is authorized to edit the user being searched, call show if true
       if @role.parent_id.nil? || @role.parent_id < session[:user].role_id || @user.id == session[:user].id
         render action: 'show'
       else
@@ -88,7 +91,7 @@ class UsersController < ApplicationController
       redirect_to(action: AuthHelper.get_home_action(session[:user]), controller: AuthHelper.get_home_controller(session[:user]))
     else
       @user = User.find(params[:id])
-      get_role
+      role
       # obtain number of assignments participated
       @assignment_participant_num = 0
       AssignmentParticipant.where(user_id: @user.id).each {|_participant| @assignment_participant_num += 1 }
@@ -212,7 +215,7 @@ class UsersController < ApplicationController
 
   def edit
     @user = User.find(params[:id])
-    get_role
+    role
     foreign
   end
 
@@ -300,7 +303,8 @@ class UsersController < ApplicationController
           .merge(self_introduction: params[:requested_user][:self_introduction])
   end
 
-  def get_role
+  #to find the role of a given user object and set the @role accordingly
+  def role
     if @user && @user.role_id
       @role = Role.find(@user.role_id)
     elsif @user
@@ -311,7 +315,6 @@ class UsersController < ApplicationController
   # For filtering the users list with proper search and pagination.
   def paginate_list(users)
     paginate_options = {"1" => 25, "2" => 50, "3" => 100}
-
     # If the above hash does not have a value for the key,
     # it means that we need to show all the users on the page
     #

@@ -55,7 +55,7 @@ describe UsersController do
     end
   end
 
-  context "#show_selection" do
+  context "#show_if_authorized" do
     before(:each) do
       allow(User).to receive(:find).with(2).and_return(instructor)
     end
@@ -65,7 +65,7 @@ describe UsersController do
       params = {
         user: {name: 'instructor6'}
       }
-      post :show_selection, params, session
+      post :show_if_authorized, params, session
       expect(response).to redirect_to('http://test.host/users/list')
     end
 
@@ -75,7 +75,7 @@ describe UsersController do
       params = {
         user: {name: 'instructor6'}
       }
-      get :show_selection, params
+      get :show_if_authorized, params
       expect(response).to render_template(:show)
     end
 
@@ -86,7 +86,7 @@ describe UsersController do
       params = {
         user: {name: 'instructor6'}
       }
-      post :show_selection, params, session
+      post :show_if_authorized, params, session
       expect(response).to redirect_to('http://test.host/users/list')
     end
   end
